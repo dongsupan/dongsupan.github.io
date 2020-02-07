@@ -153,6 +153,114 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Win10下MySQL8的ZIP方式安装" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/08/Win10%E4%B8%8BMySQL8%E7%9A%84ZIP%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85/">Win10下MySQL8的ZIP方式安装</a>
+    </h1>
+  
+
+        
+        <a href="/2020/02/08/Win10%E4%B8%8BMySQL8%E7%9A%84ZIP%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85/" class="archive-article-date">
+  	<time datetime="2020-02-07T17:02:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-02-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ul>
+<li>下载MySQL, <a href="http://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">MySQL Community Server</a>,下载的是windows下64位的ZIP包,Windows 10环境下使用</li>
+<li>解压到 <code>D:\mysql-8.0.19-winx64</code>,编写配置文件my.ini<br>编写配置文件my.ini</li>
+</ul>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[mysql]</span></span><br><span class="line"><span class="comment"># 设置mysql客户端默认字符集</span></span><br><span class="line"><span class="attr">default-character-set</span>=utf8</span><br><span class="line"><span class="section">[mysqld]</span></span><br><span class="line"><span class="comment">#设置3306端口</span></span><br><span class="line"><span class="attr">port</span> = <span class="number">3306</span></span><br><span class="line"><span class="comment"># 设置mysql的安装目录</span></span><br><span class="line"></span><br><span class="line"><span class="attr">basedir</span>=D:\\mysql-<span class="number">8.0</span>.<span class="number">19</span>-winx64\\</span><br><span class="line"><span class="comment"># 设置mysql数据库的数据的存放目录</span></span><br><span class="line"><span class="attr">datadir</span>=D:\\mysql-<span class="number">8.0</span>.<span class="number">19</span>-winx64\\\\data</span><br><span class="line"></span><br><span class="line"><span class="comment"># 允许最大连接数</span></span><br><span class="line"><span class="attr">max_connections</span>=<span class="number">200</span></span><br><span class="line"><span class="comment"># 服务端使用的字符集默认为UTF8</span></span><br><span class="line"><span class="attr">character-set-server</span>=utf8</span><br><span class="line"><span class="comment"># 创建新表时将使用的默认存储引擎</span></span><br><span class="line"><span class="attr">default-storage-engine</span>=INNODB</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>配置环境变量</p>
+<ul>
+<li>在Path中添加mysql的bin位置</li>
+<li>添加一个 MYSQL_HOME 值为<code>D:\mysql-8.0.19-winx64</code> ,如果没有添加该环境变量,mysqld install执行时服务会指向C盘去,导致<code>net start mysql</code>启动失败,提示<code>提示发生系统错误2</code></li>
+</ul>
+</li>
+<li><p>以管理员的身份运行cmd，利用cd的命令导到你实际安装的位置,例如<code>D:\\mysql-8.0.19-winx64\\</code></p>
+</li>
+<li><p>输入安装指令： mysqld -install, 遇到问题,提示 <code>提示缺少vcruntime140_1.dll</code>,需要安装VC++运行库,<a href="https://support.microsoft.com/zh-cn/kb/2977003" target="_blank" rel="noopener">微软常用运行库合集</a>,安装完毕后重启系统,问题解决</p>
+</li>
+<li><p>注意,要先进入bin目录,然后执行 mysqld –install 安装,成功后再次执行mysqld –install 命令,查看服务是否指向正确的位置,不在bin目录下执行会导致服务指向C盘</p>
+</li>
+<li><p>执行 mysqld –initialize –console （初始化） <strong>记录下root的临时密码</strong></p>
+</li>
+<li><p>执行 net start mysql（运行）</p>
+</li>
+<li><p>其他常用命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysqld --remove 移除服务</span><br><span class="line">net stop mysql  停止mysql服务</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置MySQLroot口令</p>
+<ul>
+<li>执行 <code>mysql -u root -p</code> 使用临时密码登录</li>
+<li><code>ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED WITH mysql_native_password BY &#39;password&#39;;</code> 设置root密码为password,注意测试新密码的登录</li>
+<li><code>show variables like &#39;%char%&#39;;</code> 显示编码参数,确认是UTF-8</li>
+</ul>
+</li>
+</ul>
+<p>安装过程踩了好多坑,不排除还有其他的问题没有遇到</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">MySQL8</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/02/08/Win10%E4%B8%8BMySQL8%E7%9A%84ZIP%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Eclipse安装与配置" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -927,6 +1035,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">JDK</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">MySQL8</a>
               </li>
             
             <div class="clearfix"></div>
